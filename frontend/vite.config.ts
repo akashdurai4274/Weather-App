@@ -14,7 +14,7 @@ export default defineConfig({
     proxy: {
       "/api": {
         // target: "http://localhost:8000",
-        target: "https://weather-app-kzx2.onrender.com",
+        target: "https://weather-app-2-jblm.onrender.com",
         changeOrigin: true,
       },
     },
