@@ -1,12 +1,14 @@
 from collections.abc import AsyncGenerator
-
+import ssl
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core.config import settings
+ssl_context = ssl.create_default_context()
 
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=settings.DB_ECHO,
+    connect_args={"ssl": ssl_context},
     pool_size=20,
     max_overflow=10,
     pool_pre_ping=True,

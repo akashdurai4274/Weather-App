@@ -11,7 +11,8 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = Field(
-        default="postgresql+asyncpg://postgres:root123@localhost:5432/weather_db"
+        # default="postgresql+asyncpg://postgres:root123@localhost:5432/weather_db"
+        default="DATABASE_URL=postgresql+asyncpg://neondb_owner:npg_3UHDWSsBoep0@ep-spring-band-ahziuwls-pooler.c-3.us-east-1.aws.neon.tech/neondb"
     )
     DB_ECHO: bool = False
 
