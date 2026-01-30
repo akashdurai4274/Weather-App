@@ -1,4 +1,7 @@
-import authReducer, { setCredentials, logout } from "../features/auth/authSlice";
+import authReducer, {
+  setCredentials,
+  logout,
+} from "../features/auth/authSlice";
 
 describe("authSlice", () => {
   const initialState = {
@@ -6,6 +9,7 @@ describe("authSlice", () => {
     refreshToken: null,
     username: null,
     userId: null,
+    role: null, // ✅ REQUIRED
     isAuthenticated: false,
   };
 
@@ -13,7 +17,7 @@ describe("authSlice", () => {
     expect(authReducer(undefined, { type: "unknown" })).toEqual(
       expect.objectContaining({
         isAuthenticated: false,
-      })
+      }),
     );
   });
 
@@ -23,6 +27,7 @@ describe("authSlice", () => {
       refreshToken: "test-refresh-token",
       username: "testuser",
       userId: "user-123",
+      role: "USER", // ✅ REQUIRED
     };
 
     const state = authReducer(initialState, setCredentials(credentials));
@@ -31,6 +36,7 @@ describe("authSlice", () => {
     expect(state.refreshToken).toBe("test-refresh-token");
     expect(state.username).toBe("testuser");
     expect(state.userId).toBe("user-123");
+    expect(state.role).toBe("USER");
     expect(state.isAuthenticated).toBe(true);
   });
 
@@ -40,6 +46,7 @@ describe("authSlice", () => {
       refreshToken: "refresh",
       username: "user",
       userId: "id",
+      role: "ADMIN", // ✅ REQUIRED
       isAuthenticated: true,
     };
 
@@ -49,6 +56,7 @@ describe("authSlice", () => {
     expect(state.refreshToken).toBeNull();
     expect(state.username).toBeNull();
     expect(state.userId).toBeNull();
+    expect(state.role).toBeNull(); // ✅ important
     expect(state.isAuthenticated).toBe(false);
   });
 });

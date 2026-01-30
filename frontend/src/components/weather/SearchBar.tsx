@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { useAppDispatch } from "@/app/hooks";
 import { setSelectedCity } from "@/features/weather/weatherSlice";
-import { useDebounce } from "@/hooks/useDebounce";
+// import { useDebounce } from "@/hooks/useDebounce";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 
@@ -16,7 +16,7 @@ export function SearchBar({
 }: SearchBarProps) {
   const [query, setQuery] = useState("");
   const dispatch = useAppDispatch();
-  const debouncedQuery = useDebounce(query, 500);
+  // const debouncedQuery = useDebounce(query, 500);
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -27,11 +27,11 @@ export function SearchBar({
         onSearch(trimmed);
       }
     },
-    [query, dispatch, onSearch]
+    [query, dispatch, onSearch],
   );
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 w-full max-w-lg">
+    <form onSubmit={handleSubmit} className="flex w-full max-w-lg gap-2">
       <Input
         type="text"
         value={query}
