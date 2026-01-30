@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     API_MAX_RETRIES: int = 3
 
     # CORS
-    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:5173","http://127.0.0.1:3000"]
+    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:5173","http://127.0.0.1:3000","https://weatherr-task.vercel.app"]
 
     # Admin
     ADMIN_SECRET_KEY: str = Field(default="admin-secret-secured-secret-key-production")
