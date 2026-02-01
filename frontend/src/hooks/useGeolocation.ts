@@ -37,7 +37,7 @@ export function useGeolocation(): UseGeolocationResult {
         setError("Location access denied");
         setLoading(false);
       },
-      { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 },
     );
   }, []);
 

@@ -125,7 +125,8 @@ class WeatherBitClient:
                 params["lat"] = str(geo_info["lat"])
                 params["lon"] = str(geo_info["lon"])
             else:
-                params["city"] = city
+                from app.core.exceptions import NotFoundError
+                raise NotFoundError(detail=f"City '{city}' not found")
         elif lat is not None and lon is not None:
             params["lat"] = str(lat)
             params["lon"] = str(lon)
@@ -159,7 +160,8 @@ class WeatherBitClient:
                 params["lat"] = str(geo_info["lat"])
                 params["lon"] = str(geo_info["lon"])
             else:
-                params["city"] = city
+                from app.core.exceptions import NotFoundError
+                raise NotFoundError(detail=f"City '{city}' not found")
         elif lat is not None and lon is not None:
             params["lat"] = str(lat)
             params["lon"] = str(lon)
@@ -192,7 +194,8 @@ class WeatherBitClient:
                 params["lat"] = str(geo_info["lat"])
                 params["lon"] = str(geo_info["lon"])
             else:
-                params["city"] = city
+                from app.core.exceptions import NotFoundError
+                raise NotFoundError(detail=f"City '{city}' not found")
         elif lat is not None and lon is not None:
             params["lat"] = str(lat)
             params["lon"] = str(lon)
