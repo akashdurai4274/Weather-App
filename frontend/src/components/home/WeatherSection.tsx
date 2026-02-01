@@ -11,7 +11,6 @@ import {
 } from "@/features/weather/weatherApi";
 import { usePreferencesQuery } from "@/features/preferences/preferencesApi";
 import { useGeolocation } from "@/hooks/useGeolocation";
-import { getWeatherBgClass } from "@/lib/utils";
 import { CurrentWeather } from "@/components/weather/CurrentWeather";
 import { DailyForecast } from "@/components/weather/DailyForecast";
 import { HourlyForecast } from "@/components/weather/HourlyForecast";
@@ -20,20 +19,24 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function WeatherSection() {
   const dispatch = useAppDispatch();
-  const { selectedCity, selectedLat, selectedLon, weatherDescription } =
+  const { selectedCity, selectedLat, selectedLon } =
     useAppSelector((state) => state.weather);
   const { position, loading: geoLoading } = useGeolocation();
   const { data: prefs } = usePreferencesQuery();
 
   // Determine what location to use: preferences > geolocation > default
   useEffect(() => {
+    console.log("[Weather] State:", { selectedCity, selectedLat, geoLoading, position, prefs: prefs?.default_city });
     if (selectedCity || selectedLat) return;
 
     if (prefs?.default_city) {
+      console.log("[Weather] Using pref city:", prefs.default_city);
       dispatch(setSelectedCity(prefs.default_city));
     } else if (position && !geoLoading) {
+      console.log("[Weather] Using geolocation:", position.lat, position.lon);
       dispatch(setSelectedCoords({ lat: position.lat, lon: position.lon }));
     } else if (!geoLoading) {
+      console.log("[Weather] Fallback to London");
       dispatch(setSelectedCity("London"));
     }
   }, [prefs, position, geoLoading, selectedCity, selectedLat, dispatch]);
@@ -47,6 +50,8 @@ export function WeatherSection() {
     : selectedLat && selectedLon
       ? { lat: selectedLat, lon: selectedLon }
       : { city: "London" };
+
+  console.log("[Weather] Query params:", queryParams);
 
   const enabled = hasLocation;
 
@@ -68,9 +73,6 @@ export function WeatherSection() {
     }
   }, [currentWeather, dispatch]);
 
-  const bgClass = weatherDescription
-    ? getWeatherBgClass(weatherDescription)
-    : "weather-bg-default";
 
   if (!hasLocation || (currentLoading && !currentWeather)) {
     return (
@@ -96,9 +98,7 @@ export function WeatherSection() {
   }
 
   return (
-    <div
-      className={`weather-bg ${bgClass} -m-6 p-6 min-h-[calc(100vh-3.5rem)] rounded-lg`}
-    >
+    <div className="min-h-[calc(100vh-8rem)]">
       <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
         {/* Current Weather */}
         {currentWeather && (

@@ -18,24 +18,26 @@ export function useGeolocation(): UseGeolocationResult {
 
   useEffect(() => {
     if (!navigator.geolocation) {
-      setError("Geolocation is not supported");
+      console.log("[Geo] Not supported");
+      setError("Geolocation not supported");
       setLoading(false);
       return;
     }
 
+    console.log("[Geo] Requesting location...");
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setPosition({
-          lat: pos.coords.latitude,
-          lon: pos.coords.longitude,
-        });
+        const { latitude, longitude } = pos.coords;
+        console.log("[Geo] Success:", latitude, longitude);
+        setPosition({ lat: latitude, lon: longitude });
         setLoading(false);
       },
       (err) => {
-        setError(err.message);
+        console.log("[Geo] Error:", err.code, err.message);
+        setError("Location access denied");
         setLoading(false);
       },
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 }
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
     );
   }, []);
 

@@ -39,29 +39,32 @@
     font-family: "Andika", sans-serif;
 }
 
-/* Weather background transitions */
+/* Weather background - full screen wallpaper */
 .weather-bg {
   transition: background 1s ease-in-out;
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
 }
 
 .weather-bg-clear {
-  background: linear-gradient(135deg, #87ceeb 0%, #ffd700 100%);
+  background: linear-gradient(135deg, #87ceeb 0%, #ffe066 50%, #ffd700 100%);
 }
 
 .weather-bg-rain {
-  background: linear-gradient(135deg, #4a5568 0%, #718096 50%, #2d3748 100%);
+  background: linear-gradient(180deg, #2c3e50 0%, #4a6572 50%, #232526 100%);
 }
 
 .weather-bg-thunderstorm {
-  background: linear-gradient(135deg, #1a202c 0%, #4a5568 50%, #2d3748 100%);
+  background: linear-gradient(180deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
 }
 
 .weather-bg-snow {
-  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 50%, #a0aec0 100%);
+  background: linear-gradient(180deg, #e6e9f0 0%, #cfd9df 50%, #a8c0c4 100%);
 }
 
 .weather-bg-cloudy {
-  background: linear-gradient(135deg, #a0aec0 0%, #cbd5e0 50%, #e2e8f0 100%);
+  background: linear-gradient(180deg, #8e9eab 0%, #b8c6cf 50%, #eef2f3 100%);
 }
 
 .weather-bg-default {
