@@ -53,16 +53,15 @@ def create_app() -> FastAPI:
     )
 
     # Middleware (order matters: last added = first executed)
+    app.add_middleware(GlobalErrorHandlerMiddleware)
+    app.add_middleware(RequestLoggingMiddleware)
     app.add_middleware(
         CORSMiddleware,
-        # allow_origins=settings.CORS_ORIGINS,
-        allow_origins= ["*"],
+        allow_origins=["*"],
         allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    app.add_middleware(GlobalErrorHandlerMiddleware)
-    app.add_middleware(RequestLoggingMiddleware)
 
     # Routes
     app.include_router(api_router, prefix=settings.API_V1_PREFIX)
