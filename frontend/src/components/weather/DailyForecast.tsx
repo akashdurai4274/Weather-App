@@ -11,7 +11,7 @@ export function DailyForecast({ days, units = "metric" }: DailyForecastProps) {
   if (days.length === 0) return null;
 
   return (
-    <Card className="bg-white/80 backdrop-blur-sm">
+    <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="text-lg">5-Day Forecast</CardTitle>
       </CardHeader>

@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     # Admin
     ADMIN_SECRET_KEY: str = Field(default="admin-secret-secured-secret-key-production")
 
+    # Geocoding API (LocationIQ - free tier)
+    GEOCODING_API_KEY: str = Field(default="")
+
     # Default fallback city
     DEFAULT_CITY: str = "London"
     DEFAULT_COUNTRY: str = "GB"

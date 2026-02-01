@@ -113,62 +113,103 @@ class WeatherBitClient:
     async def get_current_weather(
         self, city: str | None = None, lat: float | None = None, lon: float | None = None
     ) -> tuple[dict, bool]:
+        from app.services.geocoding import validate_city, reverse_geocode
+
         params: dict = {}
+        geo_info = None
+
         if city:
-            params["city"] = city
+            # Validate city via geocoding
+            geo_info = await validate_city(city)
+            if geo_info:
+                params["lat"] = str(geo_info["lat"])
+                params["lon"] = str(geo_info["lon"])
+            else:
+                params["city"] = city
         elif lat is not None and lon is not None:
             params["lat"] = str(lat)
             params["lon"] = str(lon)
+            geo_info = await reverse_geocode(lat, lon)
         else:
             params["city"] = settings.DEFAULT_CITY
 
         try:
             data = await self._request("/current", params)
+            # Enhance with geocoded info if available
+            if geo_info and data.get("data"):
+                data["data"][0]["city_name"] = geo_info.get("city", data["data"][0].get("city_name", ""))
+                data["data"][0]["country_code"] = geo_info.get("country", data["data"][0].get("country_code", ""))
             return data, False
         except (ExternalAPIError, RateLimitError, httpx.TimeoutException, httpx.ConnectError) as e:
             logger.warning("weather_api_fallback_mock", endpoint="/current", error=str(e))
-            from app.services.mock_weather import generate_current
-            return generate_current(city=city, lat=lat, lon=lon), True
+            from app.services.mock_weather import generate_current_async
+            return await generate_current_async(city=city, lat=lat, lon=lon), True
 
     async def get_forecast_daily(
         self, city: str | None = None, lat: float | None = None, lon: float | None = None, days: int = 5
     ) -> tuple[dict, bool]:
+        from app.services.geocoding import validate_city, reverse_geocode
+
         params: dict = {"days": str(days)}
+        geo_info = None
+
         if city:
-            params["city"] = city
+            geo_info = await validate_city(city)
+            if geo_info:
+                params["lat"] = str(geo_info["lat"])
+                params["lon"] = str(geo_info["lon"])
+            else:
+                params["city"] = city
         elif lat is not None and lon is not None:
             params["lat"] = str(lat)
             params["lon"] = str(lon)
+            geo_info = await reverse_geocode(lat, lon)
         else:
             params["city"] = settings.DEFAULT_CITY
 
         try:
             data = await self._request("/forecast/daily", params)
+            if geo_info:
+                data["city_name"] = geo_info.get("city", data.get("city_name", ""))
+                data["country_code"] = geo_info.get("country", data.get("country_code", ""))
             return data, False
         except (ExternalAPIError, RateLimitError, httpx.TimeoutException, httpx.ConnectError) as e:
             logger.warning("weather_api_fallback_mock", endpoint="/forecast/daily", error=str(e))
-            from app.services.mock_weather import generate_forecast_daily
-            return generate_forecast_daily(city=city, lat=lat, lon=lon, days=days), True
+            from app.services.mock_weather import generate_forecast_daily_async
+            return await generate_forecast_daily_async(city=city, lat=lat, lon=lon, days=days), True
 
     async def get_forecast_hourly(
         self, city: str | None = None, lat: float | None = None, lon: float | None = None, hours: int = 48
     ) -> tuple[dict, bool]:
+        from app.services.geocoding import validate_city, reverse_geocode
+
         params: dict = {"hours": str(hours)}
+        geo_info = None
+
         if city:
-            params["city"] = city
+            geo_info = await validate_city(city)
+            if geo_info:
+                params["lat"] = str(geo_info["lat"])
+                params["lon"] = str(geo_info["lon"])
+            else:
+                params["city"] = city
         elif lat is not None and lon is not None:
             params["lat"] = str(lat)
             params["lon"] = str(lon)
+            geo_info = await reverse_geocode(lat, lon)
         else:
             params["city"] = settings.DEFAULT_CITY
 
         try:
             data = await self._request("/forecast/hourly", params)
+            if geo_info:
+                data["city_name"] = geo_info.get("city", data.get("city_name", ""))
+                data["country_code"] = geo_info.get("country", data.get("country_code", ""))
             return data, False
         except (ExternalAPIError, RateLimitError, httpx.TimeoutException, httpx.ConnectError) as e:
             logger.warning("weather_api_fallback_mock", endpoint="/forecast/hourly", error=str(e))
-            from app.services.mock_weather import generate_forecast_hourly
-            return generate_forecast_hourly(city=city, lat=lat, lon=lon, hours=hours), True
+            from app.services.mock_weather import generate_forecast_hourly_async
+            return await generate_forecast_hourly_async(city=city, lat=lat, lon=lon, hours=hours), True
 
     async def get_alerts(self, lat: float, lon: float) -> tuple[dict, bool]:
         params = {"lat": str(lat), "lon": str(lon)}

@@ -10,7 +10,7 @@ export function WeatherAlerts({ alerts }: WeatherAlertsProps) {
   if (alerts.length === 0) return null;
 
   return (
-    <Card className="border-destructive bg-white/80 backdrop-blur-sm">
+    <Card className="border-destructive bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="text-lg text-destructive">
           Weather Alerts

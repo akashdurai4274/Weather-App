@@ -33,7 +33,7 @@ function DataSourceBadge({ source }: { source: string }) {
 
 export function CurrentWeather({ data, units = "metric", dataSource }: CurrentWeatherProps) {
   return (
-    <Card className="overflow-hidden bg-white/80 backdrop-blur-sm">
+    <Card className="overflow-hidden bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
       <CardContent className="p-6">
         {dataSource && (
           <div className="flex justify-end mb-2">

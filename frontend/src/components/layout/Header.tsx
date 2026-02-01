@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { logout } from "@/features/auth/authSlice";
+import { useTheme } from "@/hooks/useTheme";
 import { Button } from "../ui/button";
 
 export function Header() {
@@ -10,6 +11,7 @@ export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, username, role } = useAppSelector((state) => state.auth);
+  const { dark, toggle } = useTheme();
 
   const handleLogout = () => {
     dispatch(logout());
@@ -33,6 +35,13 @@ export function Header() {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center space-x-2 lg:space-x-4">
+          <button onClick={toggle} className="p-2 rounded-md hover:bg-muted" aria-label="Toggle theme">
+            {dark ? (
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            ) : (
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+            )}
+          </button>
           {isAuthenticated ? (
             <>
               <Link to="/">
@@ -66,12 +75,20 @@ export function Header() {
           )}
         </nav>
 
-        {/* Mobile hamburger */}
-        <button
-          className="md:hidden p-2 rounded-md hover:bg-muted transition-colors"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle menu"
-        >
+        {/* Mobile: theme + hamburger */}
+        <div className="flex md:hidden items-center gap-1">
+          <button onClick={toggle} className="p-2 rounded-md hover:bg-muted" aria-label="Toggle theme">
+            {dark ? (
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            ) : (
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+            )}
+          </button>
+          <button
+            className="p-2 rounded-md hover:bg-muted transition-colors"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+          >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             {mobileOpen ? (
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -80,6 +97,7 @@ export function Header() {
             )}
           </svg>
         </button>
+        </div>
       </div>
 
       {/* Mobile menu */}

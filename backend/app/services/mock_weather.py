@@ -87,18 +87,74 @@ def _bucket() -> int:
     return int(time.time()) // 300
 
 
-def _resolve_city(city: str | None, lat: float | None, lon: float | None):
-    """Resolve inputs to (city_name, lat, lon, country_code)."""
+_geo_cache: dict[str, tuple] = {}
+
+
+async def _resolve_city_async(city: str | None, lat: float | None, lon: float | None):
+    """Resolve inputs to (city_name, lat, lon, country_code) with geocoding fallback."""
+    from app.services.geocoding import validate_city, reverse_geocode
+
     if city:
         key = city.lower().strip()
-        info = CITY_DB.get(key)
-        if info:
+        if key in CITY_DB:
+            info = CITY_DB[key]
             return city.title(), info["lat"], info["lon"], info["cc"]
-        # Unknown city — generate plausible coords from name hash
+        # Try geocoding API
+        cache_key = f"city:{key}"
+        if cache_key in _geo_cache:
+            return _geo_cache[cache_key]
+        geo = await validate_city(city)
+        if geo:
+            result = (geo["city"], geo["lat"], geo["lon"], geo["country"])
+            _geo_cache[cache_key] = result
+            return result
+        return None  # Invalid city
+
+    if lat is not None and lon is not None:
+        # Check local DB first
+        best_name, best_cc = None, None
+        best_dist = float("inf")
+        for name, info in CITY_DB.items():
+            dist = (info["lat"] - lat) ** 2 + (info["lon"] - lon) ** 2
+            if dist < best_dist:
+                best_dist = dist
+                best_name = name.title()
+                best_cc = info["cc"]
+        if best_dist < 1:  # Close enough
+            return best_name, lat, lon, best_cc
+        # Try reverse geocoding
+        cache_key = f"coords:{lat:.2f},{lon:.2f}"
+        if cache_key in _geo_cache:
+            return _geo_cache[cache_key]
+        geo = await reverse_geocode(lat, lon)
+        if geo:
+            result = (geo["city"], lat, lon, geo["country"])
+            _geo_cache[cache_key] = result
+            return result
+        if best_name:
+            return best_name, lat, lon, best_cc
+        return "Unknown", lat, lon, "XX"
+
+    return "London", 51.51, -0.13, "GB"
+
+
+def _resolve_city(city: str | None, lat: float | None, lon: float | None):
+    """Sync version - uses cache only, no API calls."""
+    if city:
+        key = city.lower().strip()
+        if key in CITY_DB:
+            info = CITY_DB[key]
+            return city.title(), info["lat"], info["lon"], info["cc"]
+        cache_key = f"city:{key}"
+        if cache_key in _geo_cache:
+            return _geo_cache[cache_key]
         h = _hash_seed(key)
         return city.title(), 20 + h * 40, -10 + h * 100, "XX"
+
     if lat is not None and lon is not None:
-        # Reverse-lookup closest known city
+        cache_key = f"coords:{lat:.2f},{lon:.2f}"
+        if cache_key in _geo_cache:
+            return _geo_cache[cache_key]
         best_name, best_cc = "Unknown", "XX"
         best_dist = float("inf")
         for name, info in CITY_DB.items():
@@ -107,9 +163,10 @@ def _resolve_city(city: str | None, lat: float | None, lon: float | None):
                 best_dist = dist
                 best_name = name.title()
                 best_cc = info["cc"]
-        if best_dist > 400:  # too far — use generic
+        if best_dist > 400:
             best_name, best_cc = "Local Area", "XX"
         return best_name, lat, lon, best_cc
+
     return "London", 51.51, -0.13, "GB"
 
 
@@ -135,6 +192,44 @@ def _temp_now(lat: float, seed_key: str) -> float:
 
 def _weather_index(seed_key: str) -> int:
     return int(_hash_seed(f"{seed_key}:wx:{_bucket()}") * len(WEATHER_CONDITIONS))
+
+
+async def generate_current_async(
+    city: str | None = None, lat: float | None = None, lon: float | None = None
+) -> dict:
+    result = await _resolve_city_async(city, lat, lon)
+    if result is None:
+        from app.core.exceptions import NotFoundError
+        raise NotFoundError(detail=f"City '{city}' not found")
+    city_name, rlat, rlon, cc = result
+    seed = f"{city_name}:{rlat:.2f}:{rlon:.2f}"
+    temp = _temp_now(rlat, seed)
+    wx = WEATHER_CONDITIONS[_weather_index(seed)]
+    h = _hash_seed(f"{seed}:{_bucket()}")
+
+    return {
+        "data": [
+            {
+                "city_name": city_name,
+                "country_code": cc,
+                "temp": temp,
+                "app_temp": round(temp - 1.5 + h * 2, 1),
+                "rh": int(40 + h * 50),
+                "wind_spd": round(1 + h * 10, 1),
+                "wind_cdir_full": WIND_DIRS[int(h * len(WIND_DIRS))],
+                "weather": wx,
+                "vis": round(5 + h * 15, 1),
+                "pres": round(1005 + h * 20, 1),
+                "uv": round(1 + h * 10, 1),
+                "clouds": int(h * 100),
+                "sunrise": "06:15",
+                "sunset": "18:30",
+                "aqi": int(20 + h * 80),
+                "lat": round(rlat, 4),
+                "lon": round(rlon, 4),
+            }
+        ]
+    }
 
 
 def generate_current(
@@ -171,13 +266,31 @@ def generate_current(
     }
 
 
+async def generate_forecast_daily_async(
+    city: str | None = None,
+    lat: float | None = None,
+    lon: float | None = None,
+    days: int = 5,
+) -> dict:
+    result = await _resolve_city_async(city, lat, lon)
+    if result is None:
+        from app.core.exceptions import NotFoundError
+        raise NotFoundError(detail=f"City '{city}' not found")
+    city_name, rlat, rlon, cc = result
+    return _generate_forecast_daily_data(city_name, rlat, rlon, cc, days)
+
+
 def generate_forecast_daily(
     city: str | None = None,
     lat: float | None = None,
     lon: float | None = None,
     days: int = 5,
-) -> dict:  
+) -> dict:
     city_name, rlat, rlon, cc = _resolve_city(city, lat, lon)
+    return _generate_forecast_daily_data(city_name, rlat, rlon, cc, days)
+
+
+def _generate_forecast_daily_data(city_name: str, rlat: float, rlon: float, cc: str, days: int) -> dict:
     seed = f"{city_name}:{rlat:.2f}:{rlon:.2f}"
     base = _base_temp(rlat)
     today = datetime.now(timezone.utc).date()
@@ -211,6 +324,20 @@ def generate_forecast_daily(
     }
 
 
+async def generate_forecast_hourly_async(
+    city: str | None = None,
+    lat: float | None = None,
+    lon: float | None = None,
+    hours: int = 48,
+) -> dict:
+    result = await _resolve_city_async(city, lat, lon)
+    if result is None:
+        from app.core.exceptions import NotFoundError
+        raise NotFoundError(detail=f"City '{city}' not found")
+    city_name, rlat, rlon, cc = result
+    return _generate_forecast_hourly_data(city_name, rlat, rlon, cc, hours)
+
+
 def generate_forecast_hourly(
     city: str | None = None,
     lat: float | None = None,
@@ -218,6 +345,10 @@ def generate_forecast_hourly(
     hours: int = 48,
 ) -> dict:
     city_name, rlat, rlon, cc = _resolve_city(city, lat, lon)
+    return _generate_forecast_hourly_data(city_name, rlat, rlon, cc, hours)
+
+
+def _generate_forecast_hourly_data(city_name: str, rlat: float, rlon: float, cc: str, hours: int) -> dict:
     seed = f"{city_name}:{rlat:.2f}:{rlon:.2f}"
     base = _base_temp(rlat)
     now = datetime.now(timezone.utc).replace(minute=0, second=0, microsecond=0)

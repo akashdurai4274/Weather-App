@@ -29,7 +29,7 @@ export function HourlyForecast({ hours, units = "metric" }: HourlyForecastProps)
   };
 
   return (
-    <Card className="bg-white/80 backdrop-blur-sm">
+    <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="text-lg">Hourly Forecast</CardTitle>
       </CardHeader>
