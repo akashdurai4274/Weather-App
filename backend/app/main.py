@@ -8,8 +8,6 @@ from app.api.v1.router import api_router
 from app.core.config import settings
 from app.db.base import Base
 from app.db.session import engine
-from app.middleware.error_handler import GlobalErrorHandlerMiddleware
-from app.middleware.logging import RequestLoggingMiddleware
 
 # Import all models so Base.metadata registers every table
 from app.models.user import User  # noqa: F401
@@ -52,9 +50,7 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # Middleware (order matters: last added = first executed)
-    app.add_middleware(GlobalErrorHandlerMiddleware)
-    app.add_middleware(RequestLoggingMiddleware)
+    # CORS middleware only
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
