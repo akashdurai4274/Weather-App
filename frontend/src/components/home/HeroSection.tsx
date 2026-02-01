@@ -38,8 +38,7 @@ export function HeroSection() {
             <Link to="/watchlist">
               <Button
                 size="lg"
-                variant="outline"
-                className="text-white border-white hover:bg-white/10 gap-2"
+                className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-700 gap-2"
               >
                 <Star size={18} />
                 View Watchlist
