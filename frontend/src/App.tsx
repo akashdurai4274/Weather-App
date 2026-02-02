@@ -6,7 +6,7 @@ import { Toaster } from "react-hot-toast";
 import { store } from "./app/store";
 import { queryClient } from "./lib/queryClient";
 import { ErrorBoundary } from "./components/common/ErrorBoundary";
-import { AppLayout, ProtectedRoute } from "./components/layout/AppLayout";
+import { AppLayout, ProtectedRoute, PublicRoute } from "./components/layout/AppLayout";
 import { HomePage } from "./pages/HomePage";
 import { SearchPage } from "./pages/SearchPage";
 import { WatchlistPage } from "./pages/WatchlistPage";
@@ -20,10 +20,12 @@ export default function App() {
         <ErrorBoundary>
           <BrowserRouter>
             <Routes>
-              {/* Public routes */}
               <Route element={<AppLayout />}>
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/signup" element={<SignupPage />} />
+                {/* Public routes - redirect to home if authenticated */}
+                <Route element={<PublicRoute />}>
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/signup" element={<SignupPage />} />
+                </Route>
 
                 {/* Protected routes */}
                 <Route element={<ProtectedRoute />}>

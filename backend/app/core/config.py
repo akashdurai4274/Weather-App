@@ -19,8 +19,8 @@ class Settings(BaseSettings):
     # JWT
     JWT_SECRET_KEY: str = Field(default="secure-production-key-use-openssl-rand-hex-32")
     JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
     # WeatherBit via RapidAPI
     RAPIDAPI_KEY: str = Field(default="")
